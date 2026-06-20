@@ -1,0 +1,8 @@
+{
+  "name": "zerovault-frontend",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "build": "mkdir -p dist && echo '<h1>ZeroVault SPA Placeholder</h1>' > dist/index.html"
+  }
+}
