@@ -14,7 +14,7 @@ COPY pyproject.toml poetry.lock ./
 
 # Configurar Poetry para no crear entornos virtuales aislados (instalar directo en el sistema del builder)
 RUN poetry config virtualenvs.create false \
-    && poetry install --no-interaction --no-ansi --only main
+    && poetry lock && poetry install --no-interaction --no-ansi --only main
 
 # --- FASE 2: Imagen Final de Producción ---
 FROM python:3.11-alpine AS runner

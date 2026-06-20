@@ -5,7 +5,7 @@ WORKDIR /app
 
 # Copiar manifiestos e instalar dependencias de Node
 COPY package.json package-lock.json ./
-RUN npm ci
+RUN npm install
 
 # Copiar código fuente y compilar estáticos para producción
 COPY . .
