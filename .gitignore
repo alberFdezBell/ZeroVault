@@ -1,0 +1,30 @@
+# === Configuración de Seguridad ===
+.env
+.env.*
+!.env.example
+
+# === Python / Backend ===
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+.venv/
+venv/
+ENV/
+build/
+dist/
+*.egg-info/
+
+# === Node / Frontend ===
+frontend/node_modules/
+frontend/dist/
+frontend/.nx/
+.eslintcache
+
+# === Base de Datos Local ===
+# Si alguna vez guardas datos de postgres localmente en la carpeta del proyecto
+pgdata/
+
+# === Sistema Operativo ===
+.DS_Store
+Thumbs.db

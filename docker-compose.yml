@@ -1,0 +1,68 @@
+version: '3.8'
+
+services:
+  database:
+    image: postgres:16-alpine
+    container_name: zerovault-db
+    environment:
+      POSTGRES_USER: ${DB_USER:-zerovault_admin}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: ${DB_NAME:-zerovault_prod}
+    volumes:
+      # Persistencia de datos segura mapeada en el volumen gestionado por Docker
+      - zerovault_db_data:/var/lib/postgresql/data
+    networks:
+      - zerovault-backend-net
+    restart: unless-stopped
+    # Impide que el backend intente conectar antes de que la BD esté lista para transaccionar
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: zerovault-backend
+    environment:
+      - DATABASE_URL=postgresql+asyncpg://${DB_USER:-zerovault_admin}:${DB_PASSWORD}@database:5432/${DB_NAME:-zerovault_prod}
+      - APP_SECRET_KEY=${APP_SECRET_KEY}
+      - ENVIRONMENT=production
+    depends_on:
+      database:
+        condition: service_healthy
+    networks:
+      - zerovault-backend-net
+      - zerovault-frontend-net
+    restart: unless-stopped
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: zerovault-frontend
+    ports:
+      - "${WEB_PORT:-8080}:80"
+    depends_on:
+      - backend
+    volumes:
+      # Inyección dinámica de la configuración hardened de Nginx
+      - ./docker/nginx.conf:/etc/nginx/nginx.conf:ro
+    networks:
+      - zerovault-frontend-net
+    restart: unless-stopped
+
+networks:
+  # Red aislada para intercambio BD-API (Invisible desde el exterior del host)
+  zerovault-backend-net:
+    internal: true
+  # Red de servicio web expuesta
+  zerovault-frontend-net:
+    driver: bridge
+
+volumes:
+  # Volumen persistente independiente del ciclo de vida de los contenedores
+  zerovault_db_data:
+    driver: local
